@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game Suggestions</title>
+</head>
+<body>
+    <h1>Game Suggestions</h1>
+    {% if games %}
+        <ul>
+            {% for game in games %}
+            <li>
+                <strong>App ID:</strong> {{ game['appid'] }}<br>
+                <strong>Name:</strong> {{ game['name'] }}<br>
+                <strong>User Rating:</strong> {{ game['positive_sentiment_ratio'] * 100 }}%<br>
+                <strong>Price:</strong> ${{ game['price_in_dollars'] }}<br>
+                <strong>Description:</strong> {{ game['description'] }}<br>
+                <a href="{{ game['steam_url'] }}" target="_blank">View on Steam</a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% if graph_image_url %}
+            <img src="{{ graph_image_url }}" alt="Game Similarity Graph" style="max-width: 100%;">
+        {% endif %}
+    {% else %}
+        <p>No games match your criteria.</p>
+    {% endif %}
+</body>
+</html>
