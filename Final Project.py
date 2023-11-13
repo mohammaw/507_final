@@ -7,6 +7,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import networkx as nx
 import os
+from bs4 import BeautifulSoup
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -16,17 +18,51 @@ def get_games_by_tag(tag):
     if os.path.exists(cache_file):
         with open(cache_file, "r") as file:
             data = json.load(file)
+
+        cache_month = data.get('cache_info', {}).get('cache_month')
+        cache_year = data.get('cache_info', {}).get('cache_year')
+
+        current_date = datetime.now()
+
+        if cache_month == current_date.month and cache_year == current_date.year:
+            return data
+        else:
+            return fetch_and_cache_data(tag, cache_file)
     else:
-        url = f"https://steamspy.com/api.php?request=tag&tag={tag}"
-        response = requests.get(url)
-        data = response.json()
-        with open(cache_file, "w") as file:
-            json.dump(data, file)
+        return fetch_and_cache_data(tag, cache_file)
+
+def fetch_and_cache_data(tag, cache_file):
+    url = f"https://steamspy.com/api.php?request=tag&tag={tag}"
+    response = requests.get(url)
+    data = response.json()
+    current_date = datetime.now()
+    cache_info = {
+        'cache_month': current_date.month,
+        'cache_year': current_date.year
+    }
+    data['cache_info'] = cache_info
+
+    with open(cache_file, "w") as file:
+        json.dump(data, file)
+
     return data
+
+def scrape_game_description(url):
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        description_tag = soup.find('div', class_='game_description_snippet')
+        if description_tag:
+            return description_tag.text.strip()
+        else:
+            return "Description not available"
+    except Exception as e:
+        print(f"Error occurred while scraping: {e}")
+        return "Description not available"
 
 # Function to filter games by positive sentiment ratio and cost
 def filter_games(games, min_positive_sentiment, max_cost):
-    filtered_games = []
+    preliminary_filtered_games = []
     for appid, game_data in games.items():
         if "positive" in game_data and "negative" in game_data and "price" in game_data:
             positive = int(game_data["positive"])
@@ -38,30 +74,27 @@ def filter_games(games, min_positive_sentiment, max_cost):
                 sentiment_ratio = 0
             else:
                 sentiment_ratio = positive / (positive + negative)
+                sentiment_ratio = round(sentiment_ratio, 2)
 
             if sentiment_ratio >= min_positive_sentiment and (price_in_dollars <= max_cost or price_in_dollars == 0):
-                description = game_data.get("description", "Description not available")
-                steam_url = f"https://store.steampowered.com/app/{appid}"
-
-                filtered_games.append({
+                preliminary_filtered_games.append({
                     "appid": appid,
                     "name": game_data.get("name", "N/A"),
                     "positive_sentiment_ratio": sentiment_ratio,
                     "price_in_dollars": price_in_dollars,
-                    "description": description,
-                    "steam_url": steam_url,
+                    "steam_url": f"https://store.steampowered.com/app/{appid}",
                 })
 
-    return filtered_games[:10]
+    top_games = preliminary_filtered_games[:10]
+    for game in top_games:
+        game['description'] = scrape_game_description(game['steam_url'])
+
+    return top_games
 
 def create_similarity_graph(games):
     G = nx.Graph()
-
-    # Adding nodes for games
     for game in games:
         G.add_node(game['appid'], name=game['name'])
-
-    # Calculate similarities (e.g., based on sentiment ratios)
     for game1 in games:
         for game2 in games:
             if game1['appid'] != game2['appid']:
@@ -80,14 +113,13 @@ def visualize_similarity_graph(G):
     plt.title("Game Similarity Graph")
     plt.show()
 
-    # Create a directory for static files if it doesn't exist
     static_dir = "static"
     if not os.path.exists(static_dir):
         os.makedirs(static_dir)
 
     graph_image_path = os.path.join(static_dir, "game_similarity_graph.png")
     plt.savefig(graph_image_path)
-    plt.close()  # Close the figure to prevent display
+    plt.close()
     return graph_image_path
 
 # Route to display the input form
@@ -99,16 +131,22 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     tag = request.form['tag']
-    min_positive_sentiment = float(request.form['min_positive_sentiment'])
+    min_positive_sentiment = request.form['min_positive_sentiment']
     max_cost = float(request.form['max_cost'])
+
+    try:
+        if isinstance(min_positive_sentiment, str):
+            min_positive_sentiment = min_positive_sentiment.strip('%')
+        min_positive_sentiment = float(min_positive_sentiment)
+    except ValueError:
+        pass
 
     # Fetch and filter games
     games_by_tag = get_games_by_tag(tag)
     filtered_games = filter_games(games_by_tag, min_positive_sentiment, max_cost)
 
-    # Check if there are games to process
+    # Check if there are games to process and create and visualize the similarity graph
     if filtered_games:
-        # Create and visualize the similarity graph
         similarity_graph = create_similarity_graph(filtered_games)
         graph_image_path = visualize_similarity_graph(similarity_graph)
         graph_image_url = '/' + graph_image_path

@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Game Suggestions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pico.min.css') }}">
 </head>
 <body>
     <h1>Game Suggestions</h1>
@@ -19,6 +20,7 @@
             {% endfor %}
         </ul>
         {% if graph_image_url %}
+        <h2>Game Similarity Graph</h2>
             <img src="{{ graph_image_url }}" alt="Game Similarity Graph" style="max-width: 100%;">
         {% endif %}
     {% else %}

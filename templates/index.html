@@ -2,12 +2,13 @@
 <html>
 <head>
     <title>Game Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pico.min.css') }}">
 </head>
 <body>
     <h1>Search for Games</h1>
     <form action="/submit" method="post">
         Game Tag: <input type="text" name="tag"><br>
-        Minimum Positive Sentiment Ratio: <input type="text" name="min_positive_sentiment"><br>
+        Minimum User Rating (ie: .5 = 50%): <input type="text" name="min_positive_sentiment"><br>
         Maximum Cost: <input type="text" name="max_cost"><br>
         <input type="submit" value="Search">
     </form>
