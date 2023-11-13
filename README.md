@@ -43,22 +43,32 @@ cd 507_final
 #### Step 2: Set Up a Virtual Environment (Optional)
 It's recommended to use a virtual environment for Python projects. To create and activate a virtual environment, run:
 # Create a virtual environment
-```python -m venv venv```
+```bash
+python -m venv venv
+```
 
 # Activate the virtual environment
 # On Windows:
-```venv\Scripts\activate```
+```bash
+venv\Scripts\activate
+```
 # On MacOS/Linux:
-```source venv/bin/activate```
+```bash
+source venv/bin/activate
+```
 
 #### Step 3: Install Dependencies
 Install the necessary Python packages using pip:
-```pip install flask requests beautifulsoup4 matplotlib networkx```
+```bash
+pip install flask requests beautifulsoup4 matplotlib networkx
+```
 
 #### Step 4: Running Application
 Start the Flask Server
 Run the Flask application with the following command:
-```python app.py```
+```bash
+python app.py
+```
 
 #### Step 5: Accessiong the Web Interface:
 Once the server is running, open your web browser and go to http://localhost:5000. Here, you can interact with the application's web interface.
