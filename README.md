@@ -22,7 +22,7 @@ This Flask application fetches and filters game data from the SteamSpy API based
 
 ## Data Structure
 - The main data structure used is a dictionary with game IDs as keys and game information as values.
-- NetworkX is used to create a graph structure where each node represents a game, and edges represent the similarity in positive sentiment ratio between games.
+- NetworkX is used to create a graph structure where each node represents a game, and edges represent the similarity in developer between games.
 
 ## Getting Started
 This section guides you through setting up and running the Steam Game Analysis and Visualization Flask application on your local machine.
