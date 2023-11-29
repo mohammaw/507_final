@@ -60,7 +60,7 @@ source venv/bin/activate
 #### Step 3: Install Dependencies
 Install the necessary Python packages using pip:
 ```bash
-pip install flask requests beautifulsoup4 matplotlib networkx
+pip install flask requests beautifulsoup4 matplotlib networkx subprocess
 ```
 
 #### Step 4: Running Application
