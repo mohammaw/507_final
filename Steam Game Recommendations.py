@@ -1,3 +1,12 @@
+#Name: Mohammad Awad
+# Final Project Steam Recommendation Program
+
+'''
+This assignment was completed with the help of the following resources:
+ChatGPT: Error handling
+Github Copilot: Code suggestions and snippets
+'''
+
 import subprocess
 import sys
 
